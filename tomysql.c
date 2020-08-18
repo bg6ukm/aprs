@@ -27,7 +27,7 @@ char decode_mic_lat(char c)
 int checkcall(char *call)
 {
 	char *p;
-	if (strlen(call) < 5)
+	if (strlen(call) < 4)
 		return 0;
 	p = call;
 /*	if(!isdigit(*(p+2))) return 0;

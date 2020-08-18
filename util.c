@@ -129,8 +129,7 @@ void aprspacket_gps_to_trans(char *buf, int len, char **trans_res, int *trans_le
 	*trans_res = trans_res_buf;
 	*trans_len = len;
 
-	return;  // do not trans
-
+	return;			// do not trans
 
 	p = memchr(trans_res_buf, '>', len);
 	if (p == NULL)

@@ -27,6 +27,7 @@
 #include	<unistd.h>
 #include	<sys/wait.h>
 #include	<sys/un.h>		/* for Unix domain sockets */
+#include <netinet/tcp.h>
 
 #ifdef	HAVE_SYS_SELECT_H
 # include	<sys/select.h>	/* for convenience */
@@ -849,8 +850,11 @@ tcp_connect(const char *host, const char *serv)
 
 	do {
 		sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+
 		if (sockfd < 0)
 			continue;	/* ignore this one */
+		int synRetries = 2; // Send a total of 3 SYN packets => Timeout ~7s
+		setsockopt(sockfd, IPPROTO_TCP, TCP_SYNCNT, &synRetries, sizeof(synRetries));
 
 		if (connect(sockfd, res->ai_addr, res->ai_addrlen) == 0)
 			break;		/* success */

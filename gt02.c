@@ -158,7 +158,7 @@ int process_6868(int c_fd, int len)
 	n += sprintf(abuf + n, " %s\r\n", last_status);
 	if (debug)
 		fprintf(stderr, "APRS: %s\n", abuf);
-	if (strstr(abuf, "GT2UN-9") == 0)	// imei_call
+	if ( (strstr(abuf, "GT2UN-9") == 0) && (strstr(abuf, "HSSY") == 0))	// imei_call
 		sendudp(abuf, n, "127.0.0.1", 14580);
 	else {
 		sendudp(abuf, n, "127.0.0.1", 14582);

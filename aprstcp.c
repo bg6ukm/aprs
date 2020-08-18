@@ -42,16 +42,13 @@ char *laddr, *lport, *raddr, *rport;
 unsigned long fwd, rfwd;
 int r_fd, c_fd;
 char scaddr[MAXADDRLEN], sladdr[MAXADDRLEN], sraddr[MAXADDRLEN], srcaddr[MAXADDRLEN];
+char call[MAXLEN];
 
 #include "printaddr.c"
 
-void PrintStats(void)
+void PrintStats(char *msg)
 {
-	syslog(LOG_INFO, "%s->%s ", scaddr, sladdr);
-	syslog(LOG_INFO, "==> %s->%s\n", srcaddr, sraddr);
-	syslog(LOG_INFO, "===> %8lu bytes\n", fwd);
-	syslog(LOG_INFO, "<=== %8lu bytes\n", rfwd);
-
+	syslog(LOG_INFO, "%s %s->%s ==> %s->%s ===> %8lu bytes <=== %8lu bytes, msg: %s", call, scaddr, sladdr, srcaddr, sraddr, fwd, rfwd, msg);
 }
 
 #include "sendudp.c"
@@ -66,6 +63,20 @@ void relayaprs(char *buf, int len, int r_fd)
 	int trans_len = 0;
 	if (debug)
 		fprintf(stderr, "OLD APRS: %s\n", buf);
+	if (memcmp(buf, "user ", 5) == 0) {
+		char *p = buf + 5;
+		char *d = call;
+		while (*p && (*p != ' ') && (*p != '\n')) {
+			*d = *p;
+			d++;
+			p++;
+			if( d-call > 20) {
+				*d=0;
+				break;
+			}
+		}
+		*d = 0;
+	}
 	aprspacket_high_to_low(buf, len, &high_res, &low_res, &low_len);
 	if (high_res) {
 		aprspacket_gps_to_trans(low_res, low_len, &trans_res, &trans_len);
@@ -150,48 +161,62 @@ void Process(int c_fd)
 		if (FD_ISSET(r_fd, &rset)) {
 			char buffer[MAXLEN];
 			n = recv(r_fd, buffer, MAXLEN, 0);
-			if (n <= 0) {
-				PrintStats();
+			if (n == 0) {
+				PrintStats("remote disconnect");
 				exit(0);
 			}
-			buffer[n] = 0;
-			if (debug)
-				fprintf(stderr, "from server: %s", buffer);
-			Write(c_fd, buffer, n);
-			rfwd += n;
+			if ((n < 0) && !(errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)) {
+				sprintf(buffer, "read from remote error: %d", errno);
+				PrintStats(buffer);
+				exit(0);
+			}
+			if (n > 0) {
+				buffer[n] = 0;
+				if (debug)
+					fprintf(stderr, "from server: %s", buffer);
+				Write(c_fd, buffer, n);
+				rfwd += n;
+			}
 		}
 		if (FD_ISSET(c_fd, &rset)) {
 			static char buffer[MAXLEN];
 			static int lastread = 0;
 			n = recv(c_fd, buffer + lastread, MAXLEN - lastread - 1, 0);
-			if (n <= 0) {
-				PrintStats();
+			if (n == 0) {
+				PrintStats("client disconnect");
 				exit(0);
 			}
-			buffer[lastread + n] = 0;
-			if (debug)
-				fprintf(stderr, "from client: %s", buffer);
-//                      Write(r_fd, buffer + lastread, n);
-			char *p, *s;
-			n = lastread + n;
-			p = buffer;
-			while (1) {
-				if ((p - buffer) >= n)
-					break;
-				s = strchr(p, '\n');
-				if (s == NULL)
-					s = strchr(p, '\r');
-				if (s == NULL)
-					break;
-				relayaprs(p, s - p + 1, r_fd);
-				fwd = fwd + s - p + 1;
-				p = s + 1;
+			if ((n < 0) && !(errno == EINTR || errno == EWOULDBLOCK || errno == EAGAIN)) {
+				sprintf(buffer, "read from client error: %d", errno);
+				PrintStats(buffer);
+				exit(0);
 			}
-			if ((p - buffer) < n) {
-				lastread = n - (p - buffer);
-				memcpy(buffer, p, lastread);
-			} else
-				lastread = 0;
+			if (n > 0) {
+				buffer[lastread + n] = 0;
+				if (debug)
+					fprintf(stderr, "from client: %s", buffer);
+//                      Write(r_fd, buffer + lastread, n);
+				char *p, *s;
+				n = lastread + n;
+				p = buffer;
+				while (1) {
+					if ((p - buffer) >= n)
+						break;
+					s = strchr(p, '\n');
+					if (s == NULL)
+						s = strchr(p, '\r');
+					if (s == NULL)
+						break;
+					relayaprs(p, s - p + 1, r_fd);
+					fwd = fwd + s - p + 1;
+					p = s + 1;
+				}
+				if ((p - buffer) < n) {
+					lastread = n - (p - buffer);
+					memcpy(buffer, p, lastread);
+				} else
+					lastread = 0;
+			}
 		}
 	}
 }
@@ -223,7 +248,6 @@ int main(int argc, char *argv[])
 		if (got_one)
 			i++;
 	} while (got_one);
-
 	if (argc - i == 0) {
 		laddr = "0.0.0.0";
 		lport = "14580";
@@ -239,12 +263,9 @@ int main(int argc, char *argv[])
 		usage();
 	printf("aprstcp %s:%s -> %s:%s\n", laddr, lport, raddr, rport);
 	signal(SIGCHLD, SIG_IGN);
-
 	if (debug == 0)
 		daemon_init("aprstcp", LOG_DAEMON);
-
 	listen_fd = Tcp_listen(laddr, lport, (socklen_t *) & llen);
-
 	while (1) {
 		struct sockaddr sa;
 		int slen;
@@ -261,3 +282,4 @@ int main(int argc, char *argv[])
 		Close(c_fd);
 	}
 }
+
