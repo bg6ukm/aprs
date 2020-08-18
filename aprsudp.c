@@ -6,7 +6,7 @@
 	127.0.0.1 14582
 	127.0.0.1 14583
 	120.25.100.30 14580 (aprs.helloce.net)
-	106.15.35.48  14580 (欧讯服务器)
+	118.178.122.107  14580 (欧讯服务器)
 	如果SSID中有-13，发给
 	114.55.54.60  14580（lewei50.com）
 */
@@ -85,7 +85,7 @@ void relayaprs(char *buf, int len)
 
 	sendudp(trans_res, trans_len, "127.0.0.1", 14581);	// forward to asia.aprs2.net
 	sendudp(low_res, low_len, "120.25.100.30", 14580);	// forward to aprs.hellocq.net
-	sendudp(low_res, low_len, "106.15.35.48", 14580);	// forward to ouxun server
+	sendudp(low_res, low_len, "118.178.122.107", 14580);	// forward to ouxun server
 	if (strstr(buf, "-13>"))
 		sendudp(low_res, low_len, "114.55.54.60", 14580);	// forward -13 to lewei50.comI
 	insertU(buf, &len);
