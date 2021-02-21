@@ -228,7 +228,7 @@ void Process(int c_fd)
 {
 	fd_set rset;
 	struct timeval tv;
-	int m, n;
+	int n;
 	int max_fd;
 	struct sockaddr_in6 sa;
 	int salen;

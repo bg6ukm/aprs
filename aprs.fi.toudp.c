@@ -32,7 +32,6 @@ void sendudp(char *buf, int len, char *host, int port)
 {
 	struct sockaddr_in si_other;
 	int s, slen = sizeof(si_other);
-	int l;
 #ifdef DEBUG
 	fprintf(stderr, "send to %s,", host);
 #endif

@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAXLEN 4096
 int debug =1;
 #include "util.c"
 
-testutil(char *str)
+void testutil(char *str)
 {
 	char *s;
 	int h, slen;
