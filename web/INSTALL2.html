@@ -1,6 +1,6 @@
 <h3>安装记录</h3>
 
-这里安装的是一个跟202.141.176.2一样的服务器
+这里安装的是一个跟202.141.176.2/202.141.176.3一样的服务器
 
 <pre>
 1. 下载CentOS 7 安装
@@ -137,6 +137,8 @@ INSERT INTO `color` VALUES ('FF0000'),('0000FF'),('FF00FF'),('FF6666'),
 systemctl enable httpd.service 
 systemctl start httpd.service 
 
+如果功能与202.141.176.2相同：
+
 vi /etc/rc.local 
 增加
 /usr/src/aprs/aprsudp
@@ -144,6 +146,13 @@ vi /etc/rc.local
 /usr/src/aprs/udptoaprs BG6CQ
 /usr/src/aprs/udptolog
 /usr/src/aprs/udptomysql 
+
+如果功能与202.141.176.3相同：
+
+vi /etc/rc.local 
+仅仅增加一行
+/usr/src/aprs/aprstomysql
+
 
 把/etc/rc.local 改为可执行
 
@@ -168,11 +177,14 @@ http://x.x.x.x/可以看到地图
 tcp 14580可以接收标准aprs客户端连接
 
 注：
-各程序功能：
+202.141.176.2启用的各程序功能：
 1. aprsudp 从UDP接收数据包，转发
 2. aprstcp 从TCP接收数据包，转发
 3. udptoaprs BG6CQ，将UDP收到的数据包转发给 asia.aprs2.net
 4. udptolog 从UDP接收数据包，存到日志文件 
 5. udptomysql 从UDP接收数据包，存到mysql数据库
+
+202.141.176.2启用的程序功能：
+aprstomysql 从asia.arprs2.net接收数据包并存入mysql数据库
 </pre>
 

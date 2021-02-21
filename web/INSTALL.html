@@ -1,48 +1,62 @@
 <h3>安装记录</h3>
 
-这里安装的是一个完全独立的aprs服务器, 如果安装一个跟202.141.176.2一样的，请参考<a href=INSTALL2.html>这里</a>
+这里安装的是一个完全独立的aprs服务器, 如果安装一个跟202.141.176.2/202.141.176.3一样的，请参考<a href=INSTALL2.html>这里</a>
 
 <pre>
-1. 下载CentOS-6.7-x86_64-netinstall.iso，默认安装，时区设置为Asia/Shanghai
+1. 下载 CentOS 7 安装
+
+如 http://mirrors.ustc.edu.cn/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-2009.iso ，默认安装，时区设置为Asia/Shanghai
+
+如果安装时没有设置网络，可以登录后使用 nmtui 命令设置网络
 
 2. 禁止selinux
-运行vi /etc/sysconfig/selinux
-将 
+
+运行vi /etc/sysconfig/selinux, 将 
 SELINUX=enforcing 
 修改为
 SELINUX=disabled
 
 3. 更新系统
-运行 yum update
+
+运行 yum update -y
 
 4. 安装需要的软件包
+
 运行:
-yum install httpd php php-mysql mysql-server git screen gcc mysql-devel telnet ntpdate
+
+yum install -y git gcc httpd php php-mysql mariadb-server mariadb-devel screen telnet ntpdate
 
 （http://he.fi/aprsc/INSTALLING.html）
 curl -o /etc/yum.repos.d/aprsc.repo http://he.fi/aprsc/down/aprsc-centos.repo
 yum install aprsc
 
 5. 修改包过滤防火墙配置文件
-运行 vi /etc/sysconfig/iptables 修改以下内容(注意下面22端口的是允许远程登录的IP，请根据自己情况修改)
--A INPUT -m tcp -p tcp --dport 22 -j ACCEPT -s 202.38.64.0/24
--A INPUT -m tcp -p tcp --dport 22 -j ACCEPT -s 211.86.158.0/24
--A INPUT -m tcp -p tcp --dport 80 -j ACCEPT
--A INPUT -m tcp -p tcp --dport 14501 -j ACCEPT
--A INPUT -m tcp -p tcp --dport 14580 -j ACCEPT
--A INPUT -m udp -p udp --dport 14580 -j ACCEPT
+
+firewall-cmd --zone=public --permanent --add-port=80/tcp
+firewall-cmd --zone=public --permanent --add-port=14501/tcp
+firewall-cmd --zone=public --permanent --add-port=14580/tcp
+firewall-cmd --zone=public --permanent --add-port=14580/udp
+#下面这两行命令是对ssh远程访问做限制，可以暂时不做
+#如果执行，请用自己的IP地址的段替换其中的 202.38.64.0/24 ，否则自己可能无法登录
+firewall-cmd --permanent --zone=public --add-rich-rule='rule family=ipv4 source address=202.38.64.0/24 service name=ssh accept' 
+firewall-cmd --zone=public --permanent --remove-service=ssh
+firewall-cmd --reload
+
 
 6. 修改aprsc配置文件
+
 vi /etc/sysconfig/aprsc
 STARTAPRSC="yes"
 
 vi /opt/aprsc/etc/aprsc.conf
-修改ServerID，管理员mail
+修改ServerID，管理员mail等信息
+
 下面两行前加#注释：
 #Listen "UDP submit"
 #MagicBadness   42.7
 
 7. 下载源码、编译
+
 cd /usr/src
 git clone https://github.com/bg6cq/aprs
 
@@ -50,23 +64,26 @@ cd /usr/src/aprs
 make
 
 8. 修改web文件
+
 cd /var/www/
 mv html html.old
 ln -s /usr/src/aprs/web html
 
 9. 启动数据库，创建表
-vi /etc/my.cnf
 
-在[mysqld]下添加
-default-character-set=utf8
+vi /etc/my.cnf, 在[mysqld]下添加
+character_set_server=utf8
 
-增加
-[client]
+vi /etc/my.cnf.d/client.cnf, 在[client]下添加
 default-character-set=utf8
 
 保存
 
-运行service mysqld start
+运行以下命令启动 mariadb数据库
+
+systemctl enable mariadb
+systemctl start mariadb
+
 执行mysql 输入以下命令
 create database aprs;
 use aprs;
@@ -128,18 +145,26 @@ CREATE TABLE `aprspackethourcount` (
 CREATE TABLE `color` (
   `rgb` char(6) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-INSERT INTO `color` VALUES ('FF0000'),('0000FF'),('FF00FF'),('FF6666'),('CC66CC'),('FFFF00'),('66ffff'),('00ff00'),('6495ED'),('BDB76B'),('00CED1'),('ADFF2F'),('20B2AA'),('00FA9A'),('808000'),('9ACD32');
+INSERT INTO `color` VALUES ('FF0000'),('0000FF'),('FF00FF'),('FF6666'),
+('CC66CC'),('FFFF00'),('66ffff'),('00ff00'),('6495ED'),('BDB76B'),
+('00CED1'),('ADFF2F'),('20B2AA'),('00FA9A'),('808000'),('9ACD32');
 
 10. 设置开机启动
+
 执行
-chkconfig mysqld on
-chkconfig httpd on
-chkconfig aprsc on
+systemctl enable httpd.service 
+systemctl start httpd.service 
+systemctl enable aprsc
+
 
 vi /etc/rc.local 
 增加
 /usr/src/aprs/udptomysql
 /usr/src/aprs/local.toudp 127.0.0.1 BG6CQ
+
+把/etc/rc.local 改为可执行
+
+chmod a+x /etc/rc.local
 
 (上面的BG6CQ可以用自己的呼号，是登录127.0.0.1 14580取数据的)
 
