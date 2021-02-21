@@ -266,7 +266,7 @@ void Process(int c_fd)
 		tv.tv_sec = 1;
 		tv.tv_usec = 0;
 
-		m = Select(max_fd + 1, &rset, NULL, NULL, &tv);
+		Select(max_fd + 1, &rset, NULL, NULL, &tv);
 
 		// if (m == 0) continue;
 
