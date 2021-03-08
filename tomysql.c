@@ -256,6 +256,7 @@ void ToMysql(char *buf, int len)
 	strcpy(bufcopy, buf);
 
 	char *call = "", *path = "", datatype = 0, *lat = "", *lon = "", table = 0, symbol = 0, *msg = "", *p, *s;
+	char llat[20], llon[20];
 	call = buf;
 	p = strchr(buf, '>');
 	if (p == NULL)
@@ -445,10 +446,10 @@ void ToMysql(char *buf, int len)
 			lon[8] = 'E';
 		lon[9] = 0;
 
-		msg = p;
 		table = *(p + 7);
 		symbol = *(p + 6);
 		p += 8;
+		msg = p;
 
 		SavePkt(call, datatype, lat, lon, table, symbol, msg, bufcopy, path);
 
