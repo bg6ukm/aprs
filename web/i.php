@@ -488,7 +488,7 @@ if ($cmd=="map") {
 		#search { display:inline;} 
 	</style>
 	<title><?php echo $title; ?></title>
-	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=<?php echo $ak;?>"></script>
+	<script type="text/javascript" src="//api.map.baidu.com/api?v=2.0&ak=<?php echo $ak;?>"></script>
 </head>
 <body>
 <div id="full">
