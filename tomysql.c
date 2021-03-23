@@ -446,10 +446,10 @@ void ToMysql(char *buf, int len)
 			lon[8] = 'E';
 		lon[9] = 0;
 
+		msg = p;
 		table = *(p + 7);
 		symbol = *(p + 6);
 		p += 8;
-		msg = p;
 
 		SavePkt(call, datatype, lat, lon, table, symbol, msg, bufcopy, path);
 
