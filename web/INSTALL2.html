@@ -28,6 +28,7 @@ yum install -y git gcc httpd php php-mysql mariadb-server mariadb-devel screen t
 
 5. 修改包过滤防火墙配置
 
+运行 vi /etc/sysconfig/iptables 修改以下内容(注意下面22端口的是允许远程登录的IP，请根据自己情况修改)
 firewall-cmd --zone=public --permanent --add-port=80/tcp
 firewall-cmd --zone=public --permanent --add-port=14580/tcp
 firewall-cmd --zone=public --permanent --add-port=14580/udp
@@ -40,7 +41,7 @@ firewall-cmd --reload
 6. 下载源码、编译
 
 cd /usr/src
-git clone https://github.com/bg6cq/aprs
+git clone https://github.com/zh452198451/aprs
 
 cd /usr/src/aprs
 make
@@ -143,7 +144,7 @@ vi /etc/rc.local
 增加
 /usr/src/aprs/aprsudp
 /usr/src/aprs/aprstcp
-/usr/src/aprs/udptoaprs BG6CQ
+/usr/src/aprs/udptoaprs BG6UKM
 /usr/src/aprs/udptolog
 /usr/src/aprs/udptomysql 
 

@@ -32,6 +32,7 @@ yum install aprsc
 
 5. 修改包过滤防火墙配置文件
 
+运行 vi /etc/sysconfig/iptables 修改以下内容(注意下面22端口的是允许远程登录的IP，请根据自己情况修改)
 firewall-cmd --zone=public --permanent --add-port=80/tcp
 firewall-cmd --zone=public --permanent --add-port=14501/tcp
 firewall-cmd --zone=public --permanent --add-port=14580/tcp
@@ -58,7 +59,7 @@ vi /opt/aprsc/etc/aprsc.conf
 7. 下载源码、编译
 
 cd /usr/src
-git clone https://github.com/bg6cq/aprs
+git clone https://github.com/zh452198451/aprs
 
 cd /usr/src/aprs
 make
@@ -160,7 +161,7 @@ systemctl enable aprsc
 vi /etc/rc.local 
 增加
 /usr/src/aprs/udptomysql
-/usr/src/aprs/local.toudp 127.0.0.1 BG6CQ
+/usr/src/aprs/local.toudp 127.0.0.1 BG6UKM
 
 把/etc/rc.local 改为可执行
 
