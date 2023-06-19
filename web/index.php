@@ -2,7 +2,7 @@
 
 include "db.php";
 
-$ak = "7RuEGPr12yqyg11XVR9Uz7NI";
+$ak = "zFeVdeyuHgBvbKeRE9ISBRGu6pGCpdvb";
 
 date_default_timezone_set( 'Asia/Shanghai');
 
